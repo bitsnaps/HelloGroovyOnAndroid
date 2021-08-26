@@ -1,0 +1,123 @@
+apply plugin: 'com.android.application'
+apply plugin: 'groovyx.android'
+
+
+android {
+
+    /*/  multidex support dexOptions (optional)
+    dexOptions {
+        //incremental true // deprecated and has no effect
+        javaMaxHeapSize "4g"
+    }*/
+
+    compileSdkVersion 25
+    buildToolsVersion "25.0.3"
+    defaultConfig {
+        applicationId "com.corposense.hellogroovy"
+        minSdkVersion 19
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    // for http client support (needed by Volley)
+    //useLibrary 'org.apache.http.legacy'
+
+    // in case of duplication
+    packagingOptions {
+        exclude 'META-INF/services/org.codehaus.groovy.transform.ASTTransformation'
+        exclude 'META-INF/services/org.codehaus.groovy.runtime.ExtensionModule'
+        // need to exclude those two files for groovy-json
+        exclude 'META-INF/groovy-release-info.properties'
+        exclude 'META-INF/LICENSE'
+    }
+
+    // fix test issue
+    lintOptions {
+        abortOnError false
+    }
+
+    // needed if you deal with old libraries
+    //useLibrary 'org.apache.http.legacy'
+
+}
+
+
+// Extra groovy sources may be added in a similar fashion as the android plugin using the androidGroovy.sourceSets block.
+androidGroovy {
+    sourceSets {
+        main {
+            groovy {
+                srcDirs += 'src/main/java'
+            }
+        }
+    }
+    options {
+        configure(groovyOptions) {
+            javaAnnotationProcessing = true
+            configurationScript = file("$projectDir/config/groovyc.groovy")
+            encoding = 'UTF-8'
+            forkOptions.jvmArgs = ['-noverify']
+            // maybe necessary if you use Google Play Services
+        }
+        sourceCompatibility = JavaVersion.VERSION_1_7 // '1.7'
+        // as of 0.3.9 these are automatically set based off the android plugin's
+        targetCompatibility = JavaVersion.VERSION_1_7 //'1.7'
+    }
+    // if you want to skip JavaCompile
+    //skipJavaC = true
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    //implementation 'com.android.support:appcompat-v7:28.0.0'
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    //implementation 'com.android.support:appcompat-v7:26.0.0'
+    //implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+
+    // multidex to avoid big apk (optional)
+    //compile 'com.android.support:multidex:1.0.1'
+
+    // Groovy for Android Gradle Plugin
+    //compile 'org.codehaus.groovy:groovy:2.4.4:grooid'
+    compile 'org.codehaus.groovy:groovy:2.4.12:grooid'
+
+    // SwissKnife (multi-purpose library for groovy in android)
+    compile 'com.arasthel:swissknife:1.4.0'
+
+    // Regular Volley
+    //compile 'com.android.volley:volley:1.1.1'
+
+    // VolleyPlus (Http library for easy networking with full image caching)
+    compile 'dev.dworks.libs:volleyplus:0.1.4'
+
+    compile ('org.codehaus.groovy:groovy-json:2.4.12') {
+        exclude group: 'org.codehaus.groovy'
+    }
+
+    // Spock for Android (fluent testing framework)
+    androidTestCompile 'com.andrewreitz:spock-android:1.2.1'
+    androidTestCompile 'com.android.support.test:testing-support-lib:0.1'
+    //testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {...}
+    androidTestCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
+        exclude group: 'org.codehaus.groovy'
+        exclude group: 'junit'
+    }
+
+    // Optional, needed for mocking
+    androidTestCompile 'com.google.dexmaker:dexmaker:1.2'
+    
+    // Optional RoboSpock for unit testing
+    //testCompile 'org.robospock:robospock:1.0.1'
+
+    testCompile 'junit:junit:4.12'
+
+    //androidTestCompile 'com.android.support.test:runner:1.0.2'
+    //androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.2'
+}
